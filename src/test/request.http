@@ -16,3 +16,13 @@ GET http://localhost:9999/api/posts/2
 
 ###
 DELETE http://localhost:9999/api/posts/2
+
+###
+
+POST http://localhost:9999/api/posts
+Content-Type: application/json
+
+{
+  "id": 2,
+  "content": "Updated Post"
+}
