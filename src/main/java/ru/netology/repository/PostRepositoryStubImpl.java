@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-// Атомарная операция — операция, которая либо выполняется целиком, либо не выполняется вовсе;
-// Stub
 @Repository
 public class PostRepositoryStubImpl implements PostRepository {
     private final AtomicLong postId;
@@ -19,8 +17,6 @@ public class PostRepositoryStubImpl implements PostRepository {
 
     public PostRepositoryStubImpl() {
         postId = new AtomicLong(0);
-        // C ConcurrentHashMap у вас есть лучший выбор, не только потому, что это безопасно в многопоточном окружении,
-        // но так же предоставляет лучшую производительность
         postsMap = new ConcurrentHashMap<>();
     }
 
@@ -28,8 +24,6 @@ public class PostRepositoryStubImpl implements PostRepository {
         return new ArrayList<>(postsMap.values());
     }
 
-    // ofNullable — для создания Optional из значения, которое может быть null. Если значение не null,
-    // то будет создан Optional со значением, иначе — пустой Optional
     public Optional<Post> getById(long id) {
         return Optional.ofNullable(postsMap.get(id));
     }

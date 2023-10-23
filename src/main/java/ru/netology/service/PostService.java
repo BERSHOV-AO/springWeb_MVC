@@ -3,15 +3,18 @@ package ru.netology.service;
 import org.springframework.stereotype.Service;
 import ru.netology.exception.NotFoundException;
 import ru.netology.model.Post;
+import ru.netology.repository.PostRepository;
 import ru.netology.repository.PostRepositoryStubImpl;
 
 import java.util.List;
 
 @Service
 public class PostService {
-    private final PostRepositoryStubImpl repository;
 
-    public PostService(PostRepositoryStubImpl repository) {
+    // сервис завязан на интерфейс, а не на конкретную реализацию
+    private final PostRepository repository;
+
+    public PostService(PostRepository repository) {
         this.repository = repository;
     }
 
