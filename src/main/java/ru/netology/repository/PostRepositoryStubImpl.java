@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.netology.exception.NotFoundException;
 import ru.netology.model.Post;
 
@@ -54,7 +53,6 @@ public class PostRepositoryStubImpl implements PostRepository {
         long specificID = post.getId();
         // если больше 0 и наличие
         if (specificID > 0 && postsMap.containsKey(specificID)) {
-            // if (!post.getContent().equals(REMOVED)) {
             if (!postsMap.get(specificID).getContent().equals(REMOVED)) {
                 // заменяем
                 postsMap.replace(specificID, post);
