@@ -1,6 +1,7 @@
 package ru.netology.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import ru.netology.exception.NotFoundException;
 import ru.netology.model.Post;
 import ru.netology.repository.PostRepository;
@@ -30,7 +31,7 @@ public class PostService {
         return repository.save(post);
     }
 
-    public void removeById(long id) {
+    public void removeById(@PathVariable Long id) {
         repository.removeById(id);
     }
 }
