@@ -1,16 +1,53 @@
 package ru.netology.service;
 
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
+import ru.netology.dto.PostDTO;
 import ru.netology.exception.NotFoundException;
 import ru.netology.model.Post;
 import ru.netology.repository.PostRepository;
-import ru.netology.repository.PostRepositoryStubImpl;
+//import net.javaguides.springboot.repository.UserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+
+//@Service
+//public class PostService {
+//
+//    // сервис завязан на интерфейс, а не на конкретную реализацию
+//    private final PostRepository repository;
+//
+//    public PostService(PostRepository repository) {
+//        this.repository = repository;
+//    }
+//
+//    public List<Post> all() {
+//        return repository.all();
+//    }
+//
+//    public Post getById(long id) {
+//        return repository.getById(id).orElseThrow(NotFoundException::new);
+//    }
+//
+//    public Post save(Post post) {
+//        return repository.save(post);
+//    }
+//
+//    public void removeById(@PathVariable Long id) {
+//        repository.removeById(id);
+//    }
+//}
 
 @Service
 public class PostService {
+
+  //  @Autowired
+    private ModelMapper modelMapper;
+    private static final String REMOVED = "removed";
 
     // сервис завязан на интерфейс, а не на конкретную реализацию
     private final PostRepository repository;
@@ -19,20 +56,40 @@ public class PostService {
         this.repository = repository;
     }
 
-    public List<Post> all() {
-        return repository.all();
+    public List<PostDTO> all() {
+        return repository.all().
+                stream()
+                .map(this::convertEntryToDto)
+                .filter(obj -> !obj.isRemoved())
+                .collect(Collectors.toList());
     }
 
-    public Post getById(long id) {
-        return repository.getById(id).orElseThrow(NotFoundException::new);
+    //------------------------Конвертеры-------------------------
+    // конвертер, mapper
+    private PostDTO convertEntryToDto(Post post) {
+        modelMapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.LOOSE);
+        return modelMapper.map(post, PostDTO.class);
     }
 
-    public Post save(Post post) {
-        return repository.save(post);
+    private Post convertDtoToEntity(PostDTO dto) {
+        modelMapper.getConfiguration()
+                .setMatchingStrategy(MatchingStrategies.LOOSE);
+        return modelMapper.map(dto, Post.class);
+    }
+    //-----------------------------------------------------------
+
+    public PostDTO getById(long id) {
+        return convertEntryToDto(repository.getById(id).orElseThrow(NotFoundException::new));
+    }
+
+    // entity - сущность которая храниться в базе
+    public PostDTO save(PostDTO dto) {
+        var entity = convertDtoToEntity(dto);
+        return convertEntryToDto(repository.save(entity));
     }
 
     public void removeById(@PathVariable Long id) {
         repository.removeById(id);
     }
 }
-
