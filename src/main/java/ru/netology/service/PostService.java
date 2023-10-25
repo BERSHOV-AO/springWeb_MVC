@@ -18,42 +18,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 
-//@Service
-//public class PostService {
-//
-//    // сервис завязан на интерфейс, а не на конкретную реализацию
-//    private final PostRepository repository;
-//
-//    public PostService(PostRepository repository) {
-//        this.repository = repository;
-//    }
-//
-//    public List<Post> all() {
-//        return repository.all();
-//    }
-//
-//    public Post getById(long id) {
-//        return repository.getById(id).orElseThrow(NotFoundException::new);
-//    }
-//
-//    public Post save(Post post) {
-//        return repository.save(post);
-//    }
-//
-//    public void removeById(@PathVariable Long id) {
-//        repository.removeById(id);
-//    }
-//}
-
 @Service
 public class PostService {
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public class NotFoundException extends RuntimeException {
     }
-
-    private ModelMapper modelMapper;
-    private static final String REMOVED = "removed";
 
     // сервис завязан на интерфейс, а не на конкретную реализацию
     private final PostRepository repository;
@@ -69,23 +39,6 @@ public class PostService {
                 .filter(obj -> !obj.isRemoved())
                 .collect(Collectors.toList());
     }
-
-    //------------------------Конвертеры-------------------------
-    // конвертер, mapper
-//    private PostDTO convertEntityToDto(Post post) {
-//        modelMapper.getConfiguration()
-//                .setMatchingStrategy(MatchingStrategies.LOOSE);
-//        PostDTO postDTO = modelMapper.map(post, PostDTO.class);
-//        return postDTO;
-//    }
-//
-//    private Post convertDtoToEntity(PostDTO dto) {
-//        modelMapper.getConfiguration()
-//                .setMatchingStrategy(MatchingStrategies.LOOSE);
-//        Post post = modelMapper.map(dto, Post.class);
-//        return post;
-//    }
-
 
     private Post convertDtoToEntity(PostDTO dto) {
         // преобразование полей DTO в соответствующие поля сущности
@@ -104,13 +57,9 @@ public class PostService {
         dto.setRemoved(entity.isRemoved());
         return dto;
     }
-    //-----------------------------------------------------------
 
     public PostDTO getById(long id) {
-        boolean flagRemover = repository.getById(id).stream()
-                .map(Post::isRemoved)
-                .anyMatch(Boolean::booleanValue);
-
+        boolean flagRemover = getFlagRemover(repository, id);
         if (!flagRemover) {
             return convertEntityToDto(repository.getById(id).orElseThrow(NotFoundException::new));
         } else {
@@ -118,27 +67,26 @@ public class PostService {
         }
     }
 
-    // entity - сущность которая храниться в базе
     public PostDTO save(PostDTO dto) {
         var entity = convertDtoToEntity(dto);
-        //  System.out.println("entity: " + entity);
-        var savedEntity = repository.save(entity);
-        return convertEntityToDto(savedEntity);
+        boolean flagRemover = getFlagRemover(repository, entity.getId());
+        if (!flagRemover) {
+            var savedEntity = repository.save(entity);
+            return convertEntityToDto(savedEntity);
+        } else {
+            throw new NotFoundException();
+        }
     }
 
-
-//    Optional<PostDTO> modifiedDTO = dtoList.stream()
-//            .peek(dto -> {
-//                dto.setTitle("Modified Title");
-//                dto.setContent("Modified Content");
-//            })
-//            .findFirst();
-
-
     public void removeById(@PathVariable Long id) {
-        // меняем
         Optional<Post> firstObject = repository.getById(id).stream()
                 .peek(o -> o.setRemoved(true)).findFirst();
         repository.save(firstObject.get());
+    }
+
+    public static boolean getFlagRemover(PostRepository repository, long id) {
+        return repository.getById(id).stream()
+                .map(Post::isRemoved)
+                .anyMatch(Boolean::booleanValue);
     }
 }
