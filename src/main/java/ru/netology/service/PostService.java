@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 @Service
 public class PostService {
 
-  //  @Autowired
     private ModelMapper modelMapper;
     private static final String REMOVED = "removed";
 
@@ -59,34 +58,61 @@ public class PostService {
     public List<PostDTO> all() {
         return repository.all().
                 stream()
-                .map(this::convertEntryToDto)
+                .map(this::convertEntityToDto)
                 .filter(obj -> !obj.isRemoved())
                 .collect(Collectors.toList());
     }
 
     //------------------------Конвертеры-------------------------
     // конвертер, mapper
-    private PostDTO convertEntryToDto(Post post) {
+    private PostDTO convertEntityToDto(Post post) {
         modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.LOOSE);
-        return modelMapper.map(post, PostDTO.class);
+        PostDTO postDTO = modelMapper.map(post, PostDTO.class);
+        return postDTO;
     }
 
     private Post convertDtoToEntity(PostDTO dto) {
         modelMapper.getConfiguration()
                 .setMatchingStrategy(MatchingStrategies.LOOSE);
-        return modelMapper.map(dto, Post.class);
+        Post post = modelMapper.map(dto, Post.class);
+        return post;
     }
+
+
+//    private Post convertDtoToEntity(PostDTO dto) {
+//        // преобразование полей DTO в соответствующие поля сущности
+//        var entity = new Post();
+//        entity.setId(dto.getId());
+//        entity.setContent(dto.getContent());
+//        entity.setRemoved(dto.isRemoved());
+//        return entity;
+//    }
+//
+//    private PostDTO convertEntityToDto(Post entity) {
+//        // преобразование полей сущности в соответствующие поля DTO
+//        var dto = new PostDTO();
+//        dto.setId(entity.getId());
+//        dto.setContent(entity.getContent());
+//        dto.setRemoved(entity.isRemoved());
+//        // другие поля...
+//
+//        return dto;
+//    }
+
+
     //-----------------------------------------------------------
 
     public PostDTO getById(long id) {
-        return convertEntryToDto(repository.getById(id).orElseThrow(NotFoundException::new));
+        return convertEntityToDto(repository.getById(id).orElseThrow(NotFoundException::new));
     }
 
     // entity - сущность которая храниться в базе
     public PostDTO save(PostDTO dto) {
         var entity = convertDtoToEntity(dto);
-        return convertEntryToDto(repository.save(entity));
+      //  System.out.println("entity: " + entity);
+        var savedEntity = repository.save(entity);
+        return convertEntityToDto(savedEntity);
     }
 
     public void removeById(@PathVariable Long id) {
